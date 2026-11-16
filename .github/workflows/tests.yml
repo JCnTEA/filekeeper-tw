@@ -16,8 +16,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.13"]
+        # 只挑確定有對應 Python 版本的組合（例如 Ubuntu 26.04 沒有 Python 3.9）
+        include:
+          - os: windows-latest
+            python-version: "3.9"
+          - os: windows-latest
+            python-version: "3.13"
+          - os: ubuntu-latest
+            python-version: "3.13"
 
     steps:
       - name: 取出原始碼
