@@ -1,0 +1,26 @@
+# Python 產生的暫存檔
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虛擬環境
+.venv/
+venv/
+env/
+
+# 測試與覆蓋率
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 打包產物
+build/
+dist/
+*.egg-info/
+
+# 編輯器與作業系統
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
