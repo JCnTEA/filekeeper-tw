@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
 import unittest
@@ -105,6 +106,42 @@ class ProtectedReasonTest(unittest.TestCase):
     def test_folder_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             self.assertEqual(protected_reason(Path(temp)), "不是一般檔案")
+
+
+class ProtectedEnvTest(unittest.TestCase):
+    """環境變數與系統保護目錄的邊界情況（回歸測試）。"""
+
+    def setUp(self) -> None:
+        self._temp = tempfile.TemporaryDirectory()
+        self.path = Path(self._temp.name) / "可刪除.txt"
+        self.path.write_text("x", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        self._temp.cleanup()
+
+    def test_env_dir_is_protected(self) -> None:
+        """環境變數指向的目錄底下的檔案要擋下。"""
+        original = os.environ.get("ProgramData")
+        os.environ["ProgramData"] = self._temp.name
+        try:
+            self.assertIn("系統保護目錄", protected_reason(self.path) or "")
+        finally:
+            if original is None:
+                os.environ.pop("ProgramData", None)
+            else:
+                os.environ["ProgramData"] = original
+
+    def test_bare_drive_value_is_ignored(self) -> None:
+        """只有磁碟代號的值（GitHub Actions 的 SystemDrive 就是 "C:"）不得把整個磁碟視為保護目錄。"""
+        original = os.environ.get("SystemDrive")
+        os.environ["SystemDrive"] = (self.path.drive or "C:") + os.sep
+        try:
+            self.assertIsNone(protected_reason(self.path))
+        finally:
+            if original is None:
+                os.environ.pop("SystemDrive", None)
+            else:
+                os.environ["SystemDrive"] = original
 
 
 class DeleteFilesTest(unittest.TestCase):
