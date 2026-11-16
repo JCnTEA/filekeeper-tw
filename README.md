@@ -96,6 +96,7 @@ filekeeper-tw/
 ├── README.md
 ├── CHANGELOG.md
 ├── LICENSE
+├── LICENSE-zh-TW.md          # MIT 授權繁體中文譯本
 └── .gitignore
 ```
 
@@ -115,4 +116,4 @@ python -m unittest discover -s tests -v
 
 ## 授權
 
-本專案採用 [MIT 授權](LICENSE)。
+本專案採用 [MIT 授權](LICENSE)，另附 [繁體中文譯本](LICENSE-zh-TW.md)（譯文僅供參考，以英文原文為準）。
