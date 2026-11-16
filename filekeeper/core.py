@@ -33,13 +33,14 @@ TYPE_GROUPS: dict[str, tuple[str, ...]] = {
 }
 
 # 系統保護目錄：位於這些環境變數所指路徑底下的檔案一律不刪
+# 注意：刻意不收錄 SystemDrive，因為它的值可能只有「C:」（例如 GitHub Actions 的 runner），
+# 一旦收錄就會把整個系統碟誤判成保護目錄；磁碟根目錄的檔案已由下方規則另外擋下。
 _PROTECTED_ENV_VARS: tuple[str, ...] = (
     "SystemRoot",
     "windir",
     "ProgramFiles",
     "ProgramFiles(x86)",
     "ProgramData",
-    "SystemDrive",
 )
 
 
@@ -173,7 +174,16 @@ def protected_reason(path: Path) -> str | None:
         raw = os.environ.get(variable)
         if not raw:
             continue
-        base = _normalized(Path(raw)).rstrip(os.sep)
+        base_path = Path(raw)
+        try:
+            # 先解析路徑：可展開 Windows 的 8.3 短檔名，避免同一目錄有兩種寫法
+            base_path = base_path.resolve()
+        except OSError:
+            pass
+        base = _normalized(base_path).rstrip(os.sep)
+        if len(base) <= 2:
+            # 值只有磁碟代號（例如 "C:"）時不代表某個保護目錄，交給下方磁碟根目錄規則處理
+            continue
         if normalized == base or normalized.startswith(base + os.sep):
             return f"位於系統保護目錄（{raw}）"
 
